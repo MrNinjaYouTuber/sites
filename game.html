@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Згадай послідовність — Гра</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background: linear-gradient(to right, #b2fefa, #0ed2f7);
+    }
+    h1 {
+      font-size: 2em;
+      color: #fff;
+      margin-bottom: 10px;
+    }
+    #game-board {
+      display: grid;
+      grid-template-columns: repeat(2, 120px);
+      grid-gap: 20px;
+      margin: 30px 0;
+    }
+    .btn {
+      width: 120px;
+      height: 120px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: transform 0.1s ease;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    .red    { background-color: #e74c3c; }
+    .blue   { background-color: #3498db; }
+    .green  { background-color: #2ecc71; }
+    .yellow { background-color: #f1c40f; }
+
+    .active {
+      filter: brightness(1.6);
+      transform: scale(1.05);
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background: #ffffff;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    #level {
+      color: #fff;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎮 Згадай послідовність</h1>
+  <div id="level">Рівень: 0</div>
+  <div id="game-board">
+    <div class="btn red" data-color="red"></div>
+    <div class="btn blue" data-color="blue"></div>
+    <div class="btn green" data-color="green"></div>
+    <div class="btn yellow" data-color="yellow"></div>
+  </div>
+  <button onclick="startGame()">Почати гру</button>
+
+  <script>
+    const colors = ["red", "blue", "green", "yellow"];
+    let gameSequence = [];
+    let userSequence = [];
+    let level = 0;
+    let acceptingInput = false;
+
+    const buttons = document.querySelectorAll(".btn");
+    const levelText = document.getElementById("level");
+
+    buttons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        if (!acceptingInput) return;
+
+        const color = btn.dataset.color;
+        userSequence.push(color);
+        animatePress(color);
+
+        // Перевірка відповіді
+        if (userSequence[userSequence.length - 1] !== gameSequence[userSequence.length - 1]) {
+          gameOver();
+          return;
+        }
+
+        if (userSequence.length === gameSequence.length) {
+          acceptingInput = false;
+          setTimeout(nextRound, 1000);
+        }
+      });
+    });
+
+    function startGame() {
+      gameSequence = [];
+      userSequence = [];
+      level = 0;
+      acceptingInput = false;
+      nextRound();
+    }
+
+    function nextRound() {
+      level++;
+      levelText.textContent = `Рівень: ${level}`;
+      userSequence = [];
+      const nextColor = colors[Math.floor(Math.random() * colors.length)];
+      gameSequence.push(nextColor);
+      showSequence();
+    }
+
+    function showSequence() {
+      acceptingInput = false;
+      let i = 0;
+
+      const interval = setInterval(() => {
+        const color = gameSequence[i];
+        animatePress(color);
+        i++;
+        if (i >= gameSequence.length) {
+          clearInterval(interval);
+          setTimeout(() => acceptingInput = true, 300);
+        }
+      }, 600);
+    }
+
+    function animatePress(color) {
+      const button = document.querySelector(`.btn.${color}`);
+      button.classList.add("active");
+      setTimeout(() => button.classList.remove("active"), 300);
+    }
+
+    function gameOver() {
+      alert(`❌ Неправильно! Ти досяг рівня ${level}. Спробуй ще раз.`);
+      startGame();
+    }
+  </script>
+</body>
+</html>
